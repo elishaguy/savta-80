@@ -275,10 +275,12 @@ function useClue() {
   const board = SITE_DATA.connectionsBoards[currentBoardIndex];
   const st = boardRuntime;
   if (st.solvedGroups.includes(4)) return; // hardest category already solved, no clue needed
-  const hardWords = board.categories[3].words; // category 4 = hardest = red, always
-  st.selected = shuffle(hardWords).slice(0, 2);
+  // category 4 = hardest = red, always. Use a fixed pair (board.clueWords) so the same
+  // two words are shown every time the clue is clicked, not a random pair.
+  const hardWords = board.categories[3].words;
+  st.selected = (board.clueWords && board.clueWords.length === 2 ? board.clueWords : hardWords.slice(0, 2)).slice();
   st.clueUsed = true;
-  st.message = "רמז: שתי המילים שנבחרו שייכות לאותה קטגוריה (הקשה ביותר) 🔴";
+  st.message = "";
   saveState();
   renderBoardView();
 }
