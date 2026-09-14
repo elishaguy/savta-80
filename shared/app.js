@@ -141,6 +141,7 @@ function getOrInitBoardState(idx) {
       clueUsed: false,
       solveHistory: [],
       guessHistory: [],
+      triedCombos: [],
     };
     saveState();
   }
@@ -289,6 +290,18 @@ function submitGuess() {
   const board = SITE_DATA.connectionsBoards[currentBoardIndex];
   const st = boardRuntime;
   if (st.selected.length !== 4) return;
+
+  // if this exact 4-word combination was already submitted before (regardless of order),
+  // don't count it as a new try — just tell the player and keep the selection as-is
+  if (!st.triedCombos) st.triedCombos = [];
+  const comboKey = st.selected.slice().sort().join("|");
+  if (st.triedCombos.includes(comboKey)) {
+    st.message = "כבר ניסיתם את הצירוף הזה - נסו קומבינציה אחרת 🔁";
+    saveState();
+    renderBoardView();
+    return;
+  }
+  st.triedCombos.push(comboKey);
 
   // count matches per group among selected words, and record the guess (in selection order)
   // for the share text, regardless of whether it was right or wrong
