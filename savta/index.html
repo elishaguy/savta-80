@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>מזל טוב לסבתא! 🎉</title>
+  <link rel="stylesheet" href="../shared/styles.css" />
+</head>
+<body>
+  <div class="hero">
+    <div class="balloons">🎈🎉🎂🎉🎈</div>
+    <h1>מזל טוב <span id="hero-name"></span>!</h1>
+    <div class="age"><span id="hero-age"></span></div>
+    <div class="msg" id="hero-msg"></div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tabbtn active" data-tab="connections">🧩 מה הקשר</button>
+    <button class="tabbtn" data-tab="wordle">🔤 חמש אותיות</button>
+  </div>
+
+  <div class="wrap">
+    <div class="tabpanel active" id="panel-connections">
+      <div id="connections-list-view">
+        <div id="connections-list"></div>
+      </div>
+      <div id="connections-board-view" style="display:none"></div>
+    </div>
+
+    <div class="tabpanel" id="panel-wordle">
+      <div id="wordle-list-view">
+        <div id="wordle-list"></div>
+      </div>
+      <div id="wordle-board-view" style="display:none"></div>
+    </div>
+
+    <footer class="credit">נבנה באהבה על ידי גיא אלישע 💛</footer>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="../shared/app.js"></script>
+</body>
+</html>
