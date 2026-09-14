@@ -140,6 +140,7 @@ function getOrInitBoardState(idx) {
       triesLeft: SITE_DATA.connectionsTries,
       clueUsed: false,
       solveHistory: [],
+      guessHistory: [],
     };
     saveState();
   }
@@ -218,7 +219,7 @@ function renderBoardView() {
     ${
       !finished
         ? `<div class="btn-row">
-            <button class="action secondary" id="clue-btn" ${st.clueUsed ? "disabled" : ""}>רמז 💡</button>
+            <button class="action secondary" id="clue-btn" ${st.solvedGroups.includes(4) ? "disabled" : ""}>רמז 💡</button>
             <button class="action secondary" id="clear-btn">נקו בחירה</button>
             <button class="action primary" id="submit-btn" ${st.selected.length === 4 ? "" : "disabled"}>הגישו</button>
           </div>`
@@ -273,7 +274,7 @@ function toggleTile(word) {
 function useClue() {
   const board = SITE_DATA.connectionsBoards[currentBoardIndex];
   const st = boardRuntime;
-  if (st.clueUsed) return;
+  if (st.solvedGroups.includes(4)) return; // hardest category already solved, no clue needed
   const hardWords = board.categories[3].words; // category 4 = hardest = red, always
   st.selected = shuffle(hardWords).slice(0, 2);
   st.clueUsed = true;
@@ -287,12 +288,16 @@ function submitGuess() {
   const st = boardRuntime;
   if (st.selected.length !== 4) return;
 
-  // count matches per group among selected words
+  // count matches per group among selected words, and record the guess (in selection order)
+  // for the share text, regardless of whether it was right or wrong
   const counts = {};
-  st.selected.forEach((word) => {
+  const guessGroups = st.selected.map((word) => {
     const tile = st.order.find((t) => t.word === word);
     counts[tile.group] = (counts[tile.group] || 0) + 1;
+    return tile.group;
   });
+  if (!st.guessHistory) st.guessHistory = [];
+  st.guessHistory.push(guessGroups);
   const bestGroup = Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b));
   const bestCount = counts[bestGroup];
 
@@ -309,7 +314,7 @@ function submitGuess() {
     } else {
       st.message = "לא בדיוק... נסו שוב";
     }
-    st.selected = [];
+    // keep the selection as-is on a wrong guess — the user deselects/clears manually
   }
   saveState();
   renderBoardView();
@@ -318,15 +323,17 @@ function submitGuess() {
 function buildConnectionsShareText(board, st) {
   const lines = [];
   lines.push(`${SITE_DATA.shareTitlePrefix} - מה הקשר לוח ${currentBoardIndex + 1} 🧩`);
-  const order = st.solveHistory.length ? st.solveHistory : [1, 2, 3, 4];
   const emoji = { g1: "🟩", g2: "🟨", g3: "🟧", g4: "🟥" };
-  order.forEach((g) => {
-    lines.push(emoji[COLOR_KEYS[g]].repeat(4));
+  const guesses = st.guessHistory && st.guessHistory.length ? st.guessHistory : st.solveHistory.map((g) => [g, g, g, g]);
+  guesses.forEach((groups) => {
+    lines.push(groups.map((g) => emoji[COLOR_KEYS[g]]).join(""));
   });
   const won = st.solvedGroups.length === 4;
   if (won) {
     const mistakes = SITE_DATA.connectionsTries - st.triesLeft;
-    lines.push(st.clueUsed ? `נפתר עם רמז ו-${mistakes} טעויות ✅` : `נפתר עם ${mistakes} טעויות ✅`);
+    const mistakesText = mistakes === 0 ? "אפס טעויות" : mistakes === 1 ? "טעות אחת" : `${mistakes} טעויות`;
+    const clueText = st.clueUsed ? "עם רמז" : "בלי רמז";
+    lines.push(`נפתר עם ${mistakesText} ו${clueText} ✅`);
   } else {
     lines.push("לא נפתר הפעם 😅");
   }
@@ -347,6 +354,7 @@ function getWordleTries() {
 
 function renderWordleList() {
   const container = document.getElementById("wordle-list");
+  if (!container) return; // site has no Wordle section (e.g. Savta — connections only)
   const words = SITE_DATA.wordleWords || [];
   if (words.length === 0) {
     container.innerHTML = '<div class="empty-note">חידות "חמש אותיות" עוד בדרך... 🔤<br>בקרוב יעלו כאן חידות חדשות.</div>';

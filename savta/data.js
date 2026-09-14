@@ -62,5 +62,6 @@ const SITE_DATA = {
     },
   ],
 
+  // Kept but unused: Savta's site no longer has a Wordle tab (see README fix log).
   wordleWords: ["אילנה", "עברית", "שניצל", "שוויץ", "אברסט"],
 };
