@@ -324,7 +324,12 @@ function buildConnectionsShareText(board, st) {
     lines.push(emoji[COLOR_KEYS[g]].repeat(4));
   });
   const won = st.solvedGroups.length === 4;
-  lines.push(won ? `נפתר עם ${SITE_DATA.connectionsTries - st.triesLeft} נסיונות ✅` : "לא נפתר הפעם 😅");
+  if (won) {
+    const mistakes = SITE_DATA.connectionsTries - st.triesLeft;
+    lines.push(st.clueUsed ? `נפתר עם רמז ו-${mistakes} טעויות ✅` : `נפתר עם ${mistakes} טעויות ✅`);
+  } else {
+    lines.push("לא נפתר הפעם 😅");
+  }
   return lines.join("\n");
 }
 
